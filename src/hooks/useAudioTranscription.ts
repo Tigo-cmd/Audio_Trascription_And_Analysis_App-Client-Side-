@@ -11,7 +11,7 @@ import {
   Project
 } from '../types';
 
-const API_BASE ='http://localhost:8080';
+const API_BASE ='https://tigo.pythonanywhere.com';
 const API_KEY = '';
 
 const authHeaders = () => ({
