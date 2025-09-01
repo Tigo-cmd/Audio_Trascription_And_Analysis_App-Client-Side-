@@ -56,3 +56,14 @@ export interface Project {
   createdAt: Date;
   lastModified: Date;
 }
+
+export interface User {
+  id: string;
+  username: string;
+  role: 'admin' | 'user';
+}
+
+export interface AuthState {
+  isAuthenticated: boolean;
+  user: User | null;
+}
