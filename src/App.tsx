@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { LoginPage } from './components/LoginPage';
 import { Header } from './components/Header';
 import { AudioUpload } from './components/AudioUpload';
 import { JobStatus } from './components/JobStatus';
@@ -8,9 +9,18 @@ import { ChatPanel } from './components/ChatPanel';
 import { ExportHistory } from './components/ExportHistory';
 import { Settings } from './components/Settings';
 import { useAudioTranscription } from './hooks/useAudioTranscription';
+import { useAuth } from './hooks/useAuth';
 
 function App() {
   const [showSettings, setShowSettings] = useState(false);
+  
+  const {
+    authState,
+    isLoading: authLoading,
+    error: authError,
+    login,
+    logout
+  } = useAuth();
   
   const {
     projects,
@@ -39,14 +49,27 @@ function App() {
     setSettings
   } = useAudioTranscription();
 
+  // Show login page if not authenticated
+  if (!authState.isAuthenticated) {
+    return (
+      <LoginPage
+        onLogin={login}
+        isLoading={authLoading}
+        error={authError}
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Header
         currentProject={currentProject}
         projects={projects}
+        currentUser={authState.user}
         onProjectChange={setCurrentProject}
         onNewProject={createNewProject}
         onSettingsClick={() => setShowSettings(true)}
+        onLogout={logout}
       />
       
       <main className="max-w-7xl mx-auto px-6 py-8">
