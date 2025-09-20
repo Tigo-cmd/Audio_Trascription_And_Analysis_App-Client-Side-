@@ -11,12 +11,39 @@ import {
   Project
 } from '../types';
 
-const API_BASE ='https://tigo.pythonanywhere.com';
-const API_KEY = '';
+/**
+ * API base and auth helpers
+ *
+ * - If you store a JWT in localStorage.authToken it will be used as Authorization: Bearer <token>.
+ * - Otherwise we generate/persist a stable userId in localStorage and send it as X-User-Id.
+ */
+const API_BASE = 'https://backendapis-rosy.vercel.app';
 
-const authHeaders = () => ({
-  Authorization: API_KEY ? `Bearer ${API_KEY}` : ''
-});
+function getOrCreateUserId(): string {
+  try {
+    let u = localStorage.getItem('userId');
+    if (!u) {
+      u = 'user_' + Math.random().toString(36).slice(2, 9);
+      localStorage.setItem('userId', u);
+    }
+    return u;
+  } catch (e) {
+    return 'guest';
+  }
+}
+
+const authHeaders = () => {
+  try {
+    const token = localStorage.getItem('authToken');
+    if (token && token.length > 0) {
+      return { Authorization: `Bearer ${token}` };
+    }
+    const userId = getOrCreateUserId();
+    return { 'X-User-Id': userId };
+  } catch (e) {
+    return { 'X-User-Id': 'guest' };
+  }
+};
 
 async function pollJobUntilReady(jobId: string, interval = 1500, timeout = 5 * 60 * 1000) {
   const start = Date.now();
@@ -103,10 +130,10 @@ export const useAudioTranscription = () => {
     form.append('language', settings.language);
 
     try {
+      // NOTE: do NOT set Content-Type manually for multipart — let browser set boundary
       const resp = await axios.post(`${API_BASE}/api/v1/audio/upload`, form, {
         headers: {
-          ...authHeaders(),
-          'Content-Type': 'multipart/form-data'
+          ...authHeaders()
         },
         onUploadProgress: (ev) => {
           if (ev.total) {
@@ -215,10 +242,10 @@ export const useAudioTranscription = () => {
         if (includeTranscript && segments.length > 0) {
           form.append('context', JSON.stringify({ segments }));
         }
+        // NOTE: do NOT set Content-Type manually for multipart
         resp = await axios.post(`${API_BASE}/api/v1/jobs/${currentJob.id}/qa`, form, {
           headers: {
-            ...authHeaders(),
-            'Content-Type': 'multipart/form-data'
+            ...authHeaders()
           }
         });
       } else {
