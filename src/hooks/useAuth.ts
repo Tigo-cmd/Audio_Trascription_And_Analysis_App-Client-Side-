@@ -13,7 +13,7 @@ export const useAuth = () => {
   const defaultCredentials = [
     { username: 'admin', password: 'tigosofts', role: 'admin' as const },
     { username: 'user', password: 'pass2040', role: 'user' as const },
-    // { username: 'demo', password: 'demo123', role: 'user' as const }
+    { username: 'user1', password: 'user2040', role: 'user' as const }
   ];
 
   const login = useCallback(async (username: string, password: string): Promise<boolean> => {
